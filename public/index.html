@@ -1286,8 +1286,8 @@
     }
   }
 
-  // ── Pro status (set ss_pro=true in localStorage after payment) ──
-  function isPro() { return localStorage.getItem('ss_pro') === 'true'; }
+  // ── Pro status ── (enforcement disabled — re-enable when ready)
+  function isPro() { return true; }
 
   // ── Usage tracking (client-side soft limit) ───────────────
   const DAILY_LIMIT = 3;
@@ -1349,12 +1349,6 @@
     }
     if (symptoms && symptoms.length < 5 && photos.length === 0) {
       showError('Please provide a bit more detail about your symptoms.');
-      return;
-    }
-
-    // Enforce daily free limit
-    if (getUsageToday() >= DAILY_LIMIT) {
-      showUpgradeBanner();
       return;
     }
 
