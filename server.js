@@ -6,7 +6,7 @@ const app = express();
 app.use(express.json({ limit: '20mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-const SYSTEM_PROMPT = `You are a medical information assistant. Analyze the user's symptoms — including any photos provided — and return a JSON array of 6-8 possible conditions ranked most-to-least likely.
+const SYSTEM_PROMPT = `You are a medical information assistant. Analyze the user's symptoms — including any photos provided — and return a JSON array of exactly 8 possible conditions ranked most-to-least likely.
 
 RULES:
 - Return ONLY a valid JSON array. No markdown, no code fences, no explanation.
