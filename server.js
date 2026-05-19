@@ -3,16 +3,17 @@ const Anthropic = require('@anthropic-ai/sdk');
 const path = require('path');
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '20mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-const SYSTEM_PROMPT = `You are a medical information assistant. Analyze the user's symptoms and return a JSON array of 6-8 possible conditions ranked most-to-least likely.
+const SYSTEM_PROMPT = `You are a medical information assistant. Analyze the user's symptoms — including any photos provided — and return a JSON array of 6-8 possible conditions ranked most-to-least likely.
 
 RULES:
 - Return ONLY a valid JSON array. No markdown, no code fences, no explanation.
 - Keep all string values concise (1 sentence for overview, max 5 items per array).
 - Be medically accurate but written for a general audience.
 - Never diagnose — present as possibilities for research only.
+- If photos are provided, analyze any visible signs (rashes, swelling, discoloration, lesions, etc.) alongside the described symptoms.
 
 Each object must use exactly this schema:
 {
@@ -84,9 +85,12 @@ async function fetchWikiImage(conditionName) {
 }
 
 app.post('/api/analyze', async (req, res) => {
-  const { symptoms } = req.body;
+  const { symptoms = '', images = [], context = {} } = req.body;
 
-  if (!symptoms || symptoms.trim().length < 5) {
+  const hasImages = Array.isArray(images) && images.length > 0;
+  const symptomsText = typeof symptoms === 'string' ? symptoms.trim() : '';
+
+  if (!hasImages && symptomsText.length < 5) {
     return res.status(400).json({ error: 'Please describe your symptoms in more detail.' });
   }
 
@@ -98,16 +102,41 @@ app.post('/api/analyze', async (req, res) => {
   try {
     const client = new Anthropic({ apiKey });
 
+    const messageContent = [];
+
+    if (hasImages) {
+      for (const img of images.slice(0, 3)) {
+        if (img.data && img.mediaType) {
+          messageContent.push({
+            type: 'image',
+            source: { type: 'base64', media_type: img.mediaType, data: img.data },
+          });
+        }
+      }
+    }
+
+    const textParts = [];
+    if (context && (context.age || context.sex || context.duration || context.severity)) {
+      const ctx = [];
+      if (context.age) ctx.push(`Age: ${context.age}`);
+      if (context.sex) ctx.push(`Sex: ${context.sex}`);
+      if (context.duration) ctx.push(`Duration: ${context.duration}`);
+      if (context.severity) ctx.push(`Severity: ${context.severity}/10`);
+      textParts.push(`Patient context: ${ctx.join(', ')}`);
+    }
+    if (symptomsText) textParts.push(`Symptoms: ${symptomsText}`);
+    if (hasImages) {
+      const n = Math.min(images.length, 3);
+      textParts.push(`Please also analyze the ${n > 1 ? `${n} photos` : 'photo'} above for any visible signs.`);
+    }
+
+    messageContent.push({ type: 'text', text: textParts.join('\n') || 'No symptoms described.' });
+
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 8000,
       system: SYSTEM_PROMPT,
-      messages: [
-        {
-          role: 'user',
-          content: `My symptoms: ${symptoms.trim()}`
-        }
-      ]
+      messages: [{ role: 'user', content: messageContent }],
     });
 
     const rawText = message.content[0].text.trim();
