@@ -744,10 +744,20 @@
       border: 1px solid var(--border);
     }
     .locked-rank { font-size: .78rem; font-weight: 700; color: var(--text-muted); min-width: 26px; }
-    .locked-name { flex: 1; font-size: .9rem; font-weight: 600; color: var(--text-muted); }
+    .locked-name {
+      flex: 1;
+      font-size: .9rem;
+      font-weight: 600;
+      color: var(--text);
+      filter: blur(6px);
+      user-select: none;
+      pointer-events: none;
+    }
     .locked-urgency {
       font-size: .7rem; font-weight: 700; padding: 2px 8px;
       border-radius: 99px; text-transform: uppercase; letter-spacing: .2px;
+      filter: blur(4px);
+      user-select: none;
     }
     .locked-urgency.high  { background: var(--red-bg);   color: var(--red); }
     .locked-urgency.medium { background: var(--amber-bg); color: var(--amber); }
