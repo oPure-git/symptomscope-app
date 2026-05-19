@@ -599,6 +599,111 @@
     }
     .theme-toggle:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
     .theme-toggle svg { width: 18px; height: 18px; }
+
+    /* ── Usage indicator ── */
+    .usage-indicator {
+      display: none;
+      text-align: center;
+      font-size: .78rem;
+      color: var(--text-muted);
+      margin-top: 10px;
+    }
+    .usage-indicator a { color: var(--primary); text-decoration: none; font-weight: 600; }
+    .usage-indicator a:hover { text-decoration: underline; }
+    .usage-zero { color: var(--red); font-weight: 600; }
+
+    /* ── Upgrade banner ── */
+    #upgrade-banner {
+      display: none;
+      background: linear-gradient(135deg, #0f172a, #1e3a5f);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+      margin-bottom: 32px;
+      color: white;
+      text-align: center;
+    }
+    html.dark #upgrade-banner { background: linear-gradient(135deg, #0c1929, #0f2a45); border: 1px solid #1e4a7a; }
+    .upgrade-icon { font-size: 2.2rem; margin-bottom: 12px; }
+    .upgrade-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 8px; }
+    .upgrade-sub { font-size: .9rem; opacity: .8; margin-bottom: 20px; line-height: 1.55; }
+    .upgrade-perks { list-style: none; display: inline-flex; flex-direction: column; gap: 7px; margin-bottom: 24px; text-align: left; }
+    .upgrade-perks li { font-size: .88rem; opacity: .9; padding-left: 20px; position: relative; }
+    .upgrade-perks li::before { content: '✓'; position: absolute; left: 0; color: #34d399; font-weight: 700; }
+    .upgrade-cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .upgrade-btn-primary {
+      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+      color: white;
+      font-weight: 700;
+      font-size: .95rem;
+      padding: 12px 28px;
+      border-radius: 10px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity .15s;
+    }
+    .upgrade-btn-primary:hover { opacity: .88; }
+    .upgrade-btn-secondary {
+      background: rgba(255,255,255,.1);
+      color: rgba(255,255,255,.85);
+      font-weight: 600;
+      font-size: .88rem;
+      padding: 12px 20px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.2);
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .15s;
+    }
+    .upgrade-btn-secondary:hover { background: rgba(255,255,255,.18); }
+    .upgrade-tomorrow { font-size: .76rem; opacity: .45; margin-top: 14px; }
+
+    /* ── Telehealth CTA ── */
+    .telehealth-cta {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px 24px 18px;
+      margin-bottom: 24px;
+    }
+    .telehealth-cta.urgent { border-color: #fca5a5; background: #fff8f8; }
+    html.dark .telehealth-cta.urgent { background: #2d1010; border-color: #f87171; }
+    .telehealth-inner { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+    .telehealth-icon {
+      width: 50px; height: 50px;
+      border-radius: 14px;
+      background: var(--primary-light);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      color: var(--primary);
+    }
+    .telehealth-icon svg { width: 26px; height: 26px; }
+    .telehealth-cta.urgent .telehealth-icon { background: var(--red-bg); color: var(--red); }
+    .telehealth-content { flex: 1; min-width: 180px; }
+    .telehealth-title { font-size: .98rem; font-weight: 700; margin-bottom: 3px; }
+    .telehealth-sub { font-size: .84rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 8px; }
+    .telehealth-perks { list-style: none; display: flex; gap: 14px; flex-wrap: wrap; }
+    .telehealth-perks li { font-size: .77rem; color: var(--text-muted); padding-left: 14px; position: relative; }
+    .telehealth-perks li::before { content: '✓'; position: absolute; left: 0; color: var(--green); font-weight: 700; }
+    .telehealth-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+      color: white;
+      font-weight: 700;
+      font-size: .88rem;
+      padding: 11px 20px;
+      border-radius: 10px;
+      text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: opacity .15s;
+    }
+    .telehealth-btn:hover { opacity: .88; }
+    .telehealth-cta.urgent .telehealth-btn { background: linear-gradient(135deg, #dc2626, #ef4444); }
+    .telehealth-footer { font-size: .71rem; color: var(--text-muted); margin-top: 10px; }
   </style>
 </head>
 <body>
@@ -729,6 +834,26 @@
       </svg>
       Analyze Symptoms
     </button>
+    <p class="usage-indicator" id="usage-indicator"></p>
+  </div>
+
+  <!-- Upgrade banner (shown when daily free limit is reached) -->
+  <div id="upgrade-banner">
+    <div class="upgrade-icon">&#128274;</div>
+    <div class="upgrade-title">You've used all 3 free analyses today</div>
+    <p class="upgrade-sub">Upgrade to SymptomScope Pro for unlimited daily analyses<br>plus history, PDF export, and priority support.</p>
+    <ul class="upgrade-perks">
+      <li>Unlimited symptom analyses</li>
+      <li>Save and review past analyses</li>
+      <li>Export results as PDF</li>
+      <li>Photo analysis included</li>
+    </ul>
+    <div class="upgrade-cta-row">
+      <!-- Replace href with your Stripe payment link -->
+      <a class="upgrade-btn-primary" href="#upgrade" target="_blank" rel="noopener">Upgrade to Pro &mdash; $7/mo</a>
+      <button class="upgrade-btn-secondary" onclick="dismissUpgrade()">Maybe later</button>
+    </div>
+    <p class="upgrade-tomorrow">Or come back tomorrow for 3 more free analyses.</p>
   </div>
 
   <div id="error-box"></div>
@@ -749,6 +874,29 @@
   </div>
 
   <div id="results"></div>
+
+  <!-- Telehealth CTA — shown after results render -->
+  <div class="telehealth-cta" id="telehealth-cta">
+    <div class="telehealth-inner">
+      <div class="telehealth-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+      </div>
+      <div class="telehealth-content">
+        <div class="telehealth-title" id="telehealth-title">Want a real doctor's opinion?</div>
+        <p class="telehealth-sub">Connect with a board-certified physician in minutes &mdash; no appointment needed.</p>
+        <ul class="telehealth-perks">
+          <li>Diagnosis &amp; treatment plan</li>
+          <li>Prescriptions sent to your pharmacy</li>
+          <li>Available 24/7</li>
+        </ul>
+      </div>
+      <!-- Replace href with your telehealth affiliate link -->
+      <a class="telehealth-btn" id="telehealth-btn" href="#telehealth" target="_blank" rel="noopener sponsored">See a Doctor Now &rarr;</a>
+    </div>
+    <p class="telehealth-footer">Via our telehealth partner &mdash; consultation fees may apply.</p>
+  </div>
 
   <div class="disclaimer">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1034,6 +1182,56 @@
     });
   }
 
+  // ── Usage tracking (client-side soft limit) ───────────────
+  const DAILY_LIMIT = 3;
+  const usageKey = () => `ss_usage_${new Date().toISOString().slice(0, 10)}`;
+
+  function getUsageToday() {
+    return parseInt(localStorage.getItem(usageKey()) || '0', 10);
+  }
+
+  function incrementUsage() {
+    const k = usageKey();
+    localStorage.setItem(k, (parseInt(localStorage.getItem(k) || '0', 10) + 1).toString());
+  }
+
+  function updateUsageDisplay() {
+    const used = getUsageToday();
+    const el = document.getElementById('usage-indicator');
+    if (!el) return;
+    if (used === 0) { el.style.display = 'none'; return; }
+    const left = Math.max(0, DAILY_LIMIT - used);
+    el.style.display = 'block';
+    if (left === 0) {
+      el.innerHTML = `<span class="usage-zero">Daily limit reached &mdash; </span><a href="#upgrade" onclick="showUpgradeBanner()">Upgrade for unlimited</a>`;
+    } else {
+      el.textContent = `${used} of ${DAILY_LIMIT} free analyses used today`;
+    }
+  }
+
+  function showUpgradeBanner() {
+    document.getElementById('upgrade-banner').style.display = 'block';
+    document.getElementById('upgrade-banner').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function dismissUpgrade() {
+    document.getElementById('upgrade-banner').style.display = 'none';
+  }
+
+  // ── Telehealth CTA ────────────────────────────────────────
+  function renderTelehealthCTA(conditions) {
+    const cta = document.getElementById('telehealth-cta');
+    const hasHighUrgency = conditions.some(c => c.urgency === 'high');
+    cta.classList.toggle('urgent', hasHighUrgency);
+    document.getElementById('telehealth-title').textContent = hasHighUrgency
+      ? 'Some results are high urgency — see a doctor today'
+      : 'Want a real doctor\'s opinion?';
+    document.getElementById('telehealth-btn').textContent = hasHighUrgency
+      ? 'See a Doctor Now →'
+      : 'Talk to a Doctor →';
+    cta.style.display = 'block';
+  }
+
   // ── Analyze ───────────────────────────────────────────────
   async function analyze() {
     const symptoms = document.getElementById('symptom-input').value.trim();
@@ -1044,6 +1242,12 @@
     }
     if (symptoms && symptoms.length < 5 && photos.length === 0) {
       showError('Please provide a bit more detail about your symptoms.');
+      return;
+    }
+
+    // Enforce daily free limit
+    if (getUsageToday() >= DAILY_LIMIT) {
+      showUpgradeBanner();
       return;
     }
 
@@ -1087,7 +1291,10 @@
         return;
       }
 
+      incrementUsage();
+      updateUsageDisplay();
       renderConditions(data.conditions);
+      renderTelehealthCTA(data.conditions);
       document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch {
       showError('Could not connect to the server. Make sure it is running.');
@@ -1100,6 +1307,9 @@
   document.getElementById('symptom-input').addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') analyze();
   });
+
+  // Show usage counter on load if they've used any today
+  updateUsageDisplay();
 </script>
 
 </body>
