@@ -1,4 +1,6 @@
 const Anthropic = require('@anthropic-ai/sdk');
+const { createRateLimiter } = require('../../src/lib/rateLimit');
+const { fetchWikiImage } = require('../../src/lib/wikiImage');
 
 const SYSTEM_PROMPT = `You are a medical information assistant. Analyze the user's symptoms — including any photos provided — and return a JSON array of exactly 8 possible conditions ranked most-to-least likely.
 
@@ -22,75 +24,7 @@ Each object must use exactly this schema:
   "urgency": "low|medium|high"
 }`;
 
-const WIKI_HEADERS = { 'User-Agent': 'SymptomScope/1.0 (educational health tool)' };
-
-// In-memory rate limiting — resets per warm function instance
-const rateMap = new Map();
-const RATE_LIMIT = 10;
-const RATE_WINDOW_MS = 5 * 60 * 1000;
-
-function checkRateLimit(ip) {
-  const now = Date.now();
-  const entry = rateMap.get(ip);
-  if (!entry || now > entry.resetAt) {
-    rateMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
-    return true;
-  }
-  if (entry.count >= RATE_LIMIT) return false;
-  entry.count++;
-  return true;
-}
-
-async function fetchWikiSummary(title) {
-  const slug = encodeURIComponent(title.replace(/ /g, '_'));
-  const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${slug}`, { headers: WIKI_HEADERS });
-  if (!res.ok) return null;
-  return res.json();
-}
-
-async function fetchWikiImage(conditionName) {
-  const empty = { imageUrl: null, imageCaption: null, wikiUrl: null };
-  try {
-    const direct = await fetchWikiSummary(conditionName);
-    if (direct?.thumbnail?.source) {
-      return {
-        imageUrl: direct.thumbnail.source,
-        imageCaption: direct.description || null,
-        wikiUrl: direct.content_urls?.desktop?.page || null,
-      };
-    }
-
-    const searchRes = await fetch(
-      `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(conditionName)}&srnamespace=0&srlimit=3&format=json`,
-      { headers: WIKI_HEADERS }
-    );
-    if (!searchRes.ok) return empty;
-    const searchData = await searchRes.json();
-    const hits = searchData.query?.search || [];
-
-    for (const hit of hits) {
-      const page = await fetchWikiSummary(hit.title);
-      if (page?.thumbnail?.source) {
-        return {
-          imageUrl: page.thumbnail.source,
-          imageCaption: page.description || hit.title,
-          wikiUrl: page.content_urls?.desktop?.page || null,
-        };
-      }
-    }
-
-    if (direct?.content_urls?.desktop?.page) {
-      return { imageUrl: null, imageCaption: null, wikiUrl: direct.content_urls.desktop.page };
-    }
-    if (hits[0]) {
-      const page = await fetchWikiSummary(hits[0].title);
-      return { imageUrl: null, imageCaption: null, wikiUrl: page?.content_urls?.desktop?.page || null };
-    }
-  } catch {
-    // degrade silently
-  }
-  return empty;
-}
+const checkRateLimit = createRateLimiter();
 
 exports.handler = async (event) => {
   const headers = {
